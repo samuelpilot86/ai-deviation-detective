@@ -60,9 +60,21 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900">AI Deviation Detective</h1>
-          <p className="text-xs text-slate-500 mt-0.5">Pharmaceutical Manufacturing · Process Quality</p>
+        <div className="flex items-center gap-3">
+          {/* Logo mark — stylised molecular A */}
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="18" cy="18" r="18" fill="#6B21A8"/>
+            <circle cx="18" cy="10" r="3.5" fill="white"/>
+            <circle cx="10" cy="24" r="3.5" fill="white"/>
+            <circle cx="26" cy="24" r="3.5" fill="white"/>
+            <line x1="18" y1="10" x2="10" y2="24" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+            <line x1="18" y1="10" x2="26" y2="24" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+            <line x1="13" y1="19" x2="23" y2="19" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+          <div>
+            <h1 className="text-xl font-bold text-slate-900 leading-tight">AI Deviation Detective</h1>
+            <p className="text-xs text-slate-500">Pharmaceutical Manufacturing · Process Quality</p>
+          </div>
         </div>
         {result && (
           <div className="flex items-center gap-2">
@@ -84,7 +96,7 @@ export default function Home() {
         <div className="bg-white rounded-2xl border border-slate-200 px-8 py-7 flex flex-col gap-4">
             <div className="flex items-start justify-between gap-6 flex-wrap">
               <div className="flex flex-col gap-2 max-w-2xl">
-                <span className="text-xs font-semibold text-blue-600 uppercase tracking-wider">MVP · Job Application Demo</span>
+                <span className="text-xs font-semibold text-violet-700 uppercase tracking-wider">MVP · Job Application Demo</span>
                 <h2 className="text-2xl font-bold text-slate-900 leading-snug">
                   Automated process deviation detection for pharmaceutical manufacturing
                 </h2>
@@ -106,11 +118,11 @@ export default function Home() {
                   <button
                     key={s.id}
                     onClick={() => runDemo(s)}
-                    className="text-left rounded-xl border-2 border-blue-200 bg-blue-50 hover:bg-blue-100 hover:border-blue-400 transition-colors px-4 py-3 group"
+                    className="text-left rounded-xl border-2 border-violet-200 bg-violet-50 hover:bg-violet-100 hover:border-violet-400 transition-colors px-4 py-3 group"
                   >
-                    <p className="text-sm font-semibold text-blue-800 group-hover:text-blue-900">{s.label}</p>
-                    <p className="text-xs text-blue-600 mt-0.5 leading-relaxed">{s.description}</p>
-                    <p className="text-xs font-bold text-blue-700 mt-2">▶ Launch this demo →</p>
+                    <p className="text-sm font-semibold text-violet-900 group-hover:text-blue-900">{s.label}</p>
+                    <p className="text-xs text-violet-700 mt-0.5 leading-relaxed">{s.description}</p>
+                    <p className="text-xs font-bold text-violet-800 mt-2">▶ Launch this demo →</p>
                   </button>
                 ))}
               </div>

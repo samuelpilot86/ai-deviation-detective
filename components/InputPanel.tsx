@@ -24,7 +24,7 @@ export default function InputPanel({ onAnalyze, loading }: Props) {
       </div>
 
       <div
-        className={`border-2 border-dashed rounded-xl p-10 flex flex-col items-center gap-3 cursor-pointer transition-colors ${dragging ? "border-blue-400 bg-blue-50" : "border-slate-300 hover:border-slate-400"}`}
+        className={`border-2 border-dashed rounded-xl p-10 flex flex-col items-center gap-3 cursor-pointer transition-colors ${dragging ? "border-violet-400 bg-violet-50" : "border-slate-300 hover:border-slate-400"}`}
         onClick={() => inputRef.current?.click()}
         onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
         onDragLeave={() => setDragging(false)}
@@ -43,7 +43,7 @@ export default function InputPanel({ onAnalyze, loading }: Props) {
       <button
         disabled={!file || loading}
         onClick={() => file && onAnalyze(file)}
-        className="w-full py-3 rounded-xl bg-blue-600 text-white font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+        className="w-full py-3 rounded-xl bg-violet-700 text-white font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-violet-800 transition-colors flex items-center justify-center gap-2"
       >
         {loading ? (
           <>

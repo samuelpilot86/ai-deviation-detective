@@ -51,7 +51,7 @@ export default function ChatWidget({ result }: { result: AnalysisResult }) {
         )}
         {messages.map((m, i) => (
           <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-            <div className={`max-w-[80%] rounded-xl px-4 py-2.5 text-sm leading-relaxed ${m.role === "user" ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-800"}`}>
+            <div className={`max-w-[80%] rounded-xl px-4 py-2.5 text-sm leading-relaxed ${m.role === "user" ? "bg-violet-700 text-white" : "bg-slate-100 text-slate-800"}`}>
               {m.content}
             </div>
           </div>
@@ -66,7 +66,7 @@ export default function ChatWidget({ result }: { result: AnalysisResult }) {
 
       <div className="px-4 py-3 border-t border-slate-100 flex gap-2">
         <input
-          className="flex-1 rounded-xl border border-slate-200 px-4 py-2 text-sm outline-none focus:border-blue-400"
+          className="flex-1 rounded-xl border border-slate-200 px-4 py-2 text-sm outline-none focus:border-violet-400"
           placeholder="e.g. What corrective action for DEV-03?"
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -75,7 +75,7 @@ export default function ChatWidget({ result }: { result: AnalysisResult }) {
         <button
           onClick={send}
           disabled={!input.trim() || loading}
-          className="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-medium disabled:opacity-40 hover:bg-blue-700 transition-colors"
+          className="px-4 py-2 rounded-xl bg-violet-700 text-white text-sm font-medium disabled:opacity-40 hover:bg-violet-800 transition-colors"
         >
           Send
         </button>

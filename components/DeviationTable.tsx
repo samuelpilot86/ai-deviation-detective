@@ -75,7 +75,7 @@ export default function DeviationTable({ deviations, selected, onSelect }: Props
             <tr
               key={d.deviation_id}
               onClick={() => onSelect(d.deviation_id)}
-              className={`border-t border-slate-100 cursor-pointer transition-colors ${selected === d.deviation_id ? "bg-blue-50" : "hover:bg-slate-50"}`}
+              className={`border-t border-slate-100 cursor-pointer transition-colors ${selected === d.deviation_id ? "bg-violet-50" : "hover:bg-slate-50"}`}
             >
               <td className="px-6 py-4 font-mono font-medium text-slate-700">{d.deviation_id}</td>
               <td className="px-6 py-4 text-slate-600">{d.step}</td>
