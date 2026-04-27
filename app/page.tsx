@@ -61,15 +61,18 @@ export default function Home() {
     <div className="min-h-screen bg-slate-50">
       <header className="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          {/* Logo mark — stylised molecular A */}
-          <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="18" cy="18" r="18" fill="#6B21A8"/>
-            <circle cx="18" cy="10" r="3.5" fill="white"/>
-            <circle cx="10" cy="24" r="3.5" fill="white"/>
-            <circle cx="26" cy="24" r="3.5" fill="white"/>
-            <line x1="18" y1="10" x2="10" y2="24" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-            <line x1="18" y1="10" x2="26" y2="24" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-            <line x1="13" y1="19" x2="23" y2="19" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+          {/* Logo mark — EKG spike + bullseye */}
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="20" cy="20" r="20" fill="#6366B4"/>
+            {/* EKG baseline + spike */}
+            <polyline
+              points="2,22 8,22 11,25 13,19 16,28 19,10 22,26 24,22 30,22"
+              stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none"
+            />
+            {/* Bullseye — outer ring */}
+            <circle cx="33" cy="11" r="4.5" stroke="white" strokeWidth="2" fill="none"/>
+            {/* Bullseye — inner dot */}
+            <circle cx="33" cy="11" r="1.8" fill="white"/>
           </svg>
           <div>
             <h1 className="text-xl font-bold text-slate-900 leading-tight">AI Deviation Detective</h1>
