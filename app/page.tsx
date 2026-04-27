@@ -76,7 +76,7 @@ export default function Home() {
           </svg>
           <div>
             <h1 className="text-xl font-bold text-slate-900 leading-tight">AI Deviation Detective</h1>
-            <p className="text-xs text-slate-500">Pharmaceutical Manufacturing · Process Quality</p>
+            <p className="text-xs text-slate-500">Pharmaceutical Manufacturing · Process Quality · <span className="text-violet-600 font-medium">Job application demo by Samuel Pilot</span></p>
           </div>
         </div>
         {result && (
