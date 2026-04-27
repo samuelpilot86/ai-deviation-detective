@@ -16,16 +16,25 @@ interface Row {
 }
 
 // Known anomalous timestamps from EXPECTED.md
+function generatePhDriftTs(): string[] {
+  // Drift runs continuously from 09:25 to 10:14 (50 readings)
+  const result: string[] = [];
+  let h = 9, m = 25;
+  for (let k = 0; k < 50; k++) {
+    result.push(`2024-03-12 ${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:00`);
+    m += 1;
+    if (m >= 60) { m = 0; h += 1; }
+  }
+  return result;
+}
+
 const ANOMALOUS_TS = new Set([
   "2024-03-12 07:05:00", // multivariate MIXING
   "2024-03-12 07:06:00",
   "2024-03-12 07:40:00", // RPM context HEATING
   "2024-03-12 07:50:00", // temp spike
   "2024-03-12 07:51:00",
-  ...Array.from({ length: 20 }, (_, i) => {
-    const m = 30 + i;
-    return `2024-03-12 09:${String(m).padStart(2, "0")}:00`;
-  }), // pH drift FILLING 09:30–09:49
+  ...generatePhDriftTs(), // pH drift FILLING 09:25–10:14 (continuous, no recovery)
 ]);
 
 // Step color palette
