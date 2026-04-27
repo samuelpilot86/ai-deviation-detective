@@ -7,6 +7,7 @@ import DeviationTable from "@/components/DeviationTable";
 import DeviationDetail from "@/components/DeviationDetail";
 import ChatWidget from "@/components/ChatWidget";
 import ExportButton from "@/components/ExportButton";
+import BatchPreview from "@/components/BatchPreview";
 import { AnalysisResult } from "@/lib/types";
 
 const DEMO_SCENARIOS = [
@@ -141,20 +142,27 @@ export default function Home() {
           <div className="px-8 py-6">
             {tab === "csv" && <InputPanel onAnalyze={runAnalysis} loading={loading} embedded />}
             {tab === "demo" && (
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-6">
                 {DEMO_SCENARIOS.map(s => (
-                  <button
-                    key={s.id}
-                    onClick={() => runDemo(s)}
-                    disabled={loading}
-                    className="text-left rounded-xl border-2 border-violet-200 bg-violet-50 hover:bg-violet-100 hover:border-violet-400 transition-colors px-5 py-4 group disabled:opacity-40"
-                  >
-                    <p className="text-sm font-semibold text-violet-900">{s.label}</p>
-                    <p className="text-xs text-violet-600 mt-1 leading-relaxed">{s.description}</p>
-                    <p className="text-xs font-bold text-violet-700 mt-2 group-hover:underline">
-                      {loading ? "Analyzing…" : "▶ Launch this demo →"}
-                    </p>
-                  </button>
+                  <div key={s.id} className="flex flex-col gap-4">
+                    {/* Launch button */}
+                    <div className="flex items-center justify-between gap-4 flex-wrap">
+                      <div>
+                        <p className="text-sm font-semibold text-slate-800">{s.label}</p>
+                        <p className="text-xs text-slate-500 mt-0.5">{s.description}</p>
+                      </div>
+                      <button
+                        onClick={() => runDemo(s)}
+                        disabled={loading}
+                        className="shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-xl bg-violet-700 text-white text-sm font-semibold hover:bg-violet-800 disabled:opacity-40 transition-colors"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                        {loading ? "Analyzing…" : "Run analysis"}
+                      </button>
+                    </div>
+                    {/* Data preview */}
+                    <BatchPreview csvPath={s.file} />
+                  </div>
                 ))}
               </div>
             )}
