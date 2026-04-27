@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+type Tab = "demo" | "csv";
 import InputPanel from "@/components/InputPanel";
 import MetricsBar from "@/components/MetricsBar";
 import DeviationTable from "@/components/DeviationTable";
@@ -24,6 +25,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [showChat, setShowChat] = useState(false);
+  const [tab, setTab] = useState<Tab>("demo");
 
   async function runAnalysis(file: File) {
     setLoading(true);
@@ -95,44 +97,69 @@ export default function Home() {
 
       <main className="max-w-7xl mx-auto px-8 py-8 flex flex-col gap-6">
 
-        {/* ── Intro banner ── */}
-        <div className="bg-white rounded-2xl border border-slate-200 px-8 py-7 flex flex-col gap-4">
-            <div className="flex items-start justify-between gap-6 flex-wrap">
-              <div className="flex flex-col gap-2 max-w-2xl">
-                <span className="text-xs font-semibold text-violet-700 uppercase tracking-wider">MVP · Job Application Demo</span>
-                <h2 className="text-2xl font-bold text-slate-900 leading-snug">
-                  Automated process deviation detection for pharmaceutical manufacturing
-                </h2>
-                <p className="text-slate-600 text-sm leading-relaxed">
-                  Upload a production batch log (CSV) — the system uses <strong>Isolation Forest</strong> to flag
-                  statistical anomalies, then a <strong>large language model</strong> explains each deviation in
-                  business language, identifies probable root causes, assigns a risk level, and generates a
-                  non-conformity report. An investigation copilot lets you ask follow-up questions.
-                </p>
-                <p className="text-slate-400 text-xs mt-1">
-                  Built by Samuel as a job application demo for the AI Product Builder (Digital PO) role · Sanofi M&amp;S Accelerator — independent project, not affiliated with Sanofi.
-                </p>
-              </div>
+        {/* ── Intro + tabbed input ── */}
+        <div className="bg-white rounded-2xl border border-slate-200">
 
-              {/* Demo scenarios */}
-              <div className="flex flex-col gap-2 min-w-64">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Demo scenarios</p>
+          {/* Description */}
+          <div className="px-8 pt-7 pb-5 border-b border-slate-100">
+            <span className="text-xs font-semibold text-violet-700 uppercase tracking-wider">MVP · Job Application Demo</span>
+            <h2 className="text-2xl font-bold text-slate-900 leading-snug mt-1">
+              Automated process deviation detection for pharmaceutical manufacturing
+            </h2>
+            <p className="text-slate-500 text-sm leading-relaxed mt-2 max-w-3xl">
+              Upload a production batch log (CSV) — <strong>Isolation Forest</strong> flags statistical anomalies,
+              then a <strong>large language model</strong> explains each deviation, identifies root causes, assigns
+              risk levels, and generates a non-conformity report. An investigation copilot lets you ask follow-up questions.
+            </p>
+            <p className="text-slate-400 text-xs mt-2">
+              Built by Samuel as a job application demo for the AI Product Builder (Digital PO) role · Sanofi M&amp;S Accelerator — independent project, not affiliated with Sanofi.
+            </p>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex border-b border-slate-100 px-8">
+            {(["csv", "demo"] as Tab[]).map(t => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                className={`px-4 py-3 text-sm font-medium transition-colors flex items-center gap-1.5 ${
+                  tab === t
+                    ? "border-b-2 border-violet-600 text-violet-700"
+                    : "text-slate-400 hover:text-slate-600"
+                }`}
+              >
+                {t === "csv" ? (
+                  <><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Upload CSV</>
+                ) : (
+                  <><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>Demo</>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Tab content */}
+          <div className="px-8 py-6">
+            {tab === "csv" && <InputPanel onAnalyze={runAnalysis} loading={loading} embedded />}
+            {tab === "demo" && (
+              <div className="flex flex-col gap-3">
                 {DEMO_SCENARIOS.map(s => (
                   <button
                     key={s.id}
                     onClick={() => runDemo(s)}
-                    className="text-left rounded-xl border-2 border-violet-200 bg-violet-50 hover:bg-violet-100 hover:border-violet-400 transition-colors px-4 py-3 group"
+                    disabled={loading}
+                    className="text-left rounded-xl border-2 border-violet-200 bg-violet-50 hover:bg-violet-100 hover:border-violet-400 transition-colors px-5 py-4 group disabled:opacity-40"
                   >
-                    <p className="text-sm font-semibold text-violet-900 group-hover:text-blue-900">{s.label}</p>
-                    <p className="text-xs text-violet-700 mt-0.5 leading-relaxed">{s.description}</p>
-                    <p className="text-xs font-bold text-violet-800 mt-2">▶ Launch this demo →</p>
+                    <p className="text-sm font-semibold text-violet-900">{s.label}</p>
+                    <p className="text-xs text-violet-600 mt-1 leading-relaxed">{s.description}</p>
+                    <p className="text-xs font-bold text-violet-700 mt-2 group-hover:underline">
+                      {loading ? "Analyzing…" : "▶ Launch this demo →"}
+                    </p>
                   </button>
                 ))}
               </div>
-            </div>
+            )}
           </div>
-
-        <InputPanel onAnalyze={runAnalysis} loading={loading} />
+        </div>
 
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-2xl px-6 py-4 text-red-700 text-sm">

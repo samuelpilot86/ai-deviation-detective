@@ -4,9 +4,10 @@ import { useRef, useState } from "react";
 interface Props {
   onAnalyze: (file: File) => void;
   loading: boolean;
+  embedded?: boolean;
 }
 
-export default function InputPanel({ onAnalyze, loading }: Props) {
+export default function InputPanel({ onAnalyze, loading, embedded }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
@@ -16,12 +17,17 @@ export default function InputPanel({ onAnalyze, loading }: Props) {
     setFile(f);
   }
 
-  return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-8 flex flex-col gap-6">
-      <div>
-        <h2 className="text-lg font-semibold text-slate-800">Upload Batch Log</h2>
-        <p className="text-sm text-slate-500 mt-1">CSV format — columns: timestamp, batch_id, step, temperature_c, pressure_bar, ph, mixing_rpm</p>
-      </div>
+  const inner = (
+    <div className="flex flex-col gap-6">
+      {!embedded && (
+        <div>
+          <h2 className="text-lg font-semibold text-slate-800">Upload Batch Log</h2>
+          <p className="text-sm text-slate-500 mt-1">CSV format — columns: timestamp, batch_id, step, temperature_c, pressure_bar, ph, mixing_rpm</p>
+        </div>
+      )}
+      {embedded && (
+        <p className="text-sm text-slate-500">CSV format — columns: timestamp, batch_id, step, temperature_c, pressure_bar, ph, mixing_rpm</p>
+      )}
 
       <div
         className={`border-2 border-dashed rounded-xl p-10 flex flex-col items-center gap-3 cursor-pointer transition-colors ${dragging ? "border-violet-400 bg-violet-50" : "border-slate-300 hover:border-slate-400"}`}
@@ -55,6 +61,14 @@ export default function InputPanel({ onAnalyze, loading }: Props) {
           </>
         ) : "Run Analysis"}
       </button>
+    </div>
+  );
+
+  if (embedded) return inner;
+
+  return (
+    <div className="bg-white rounded-2xl border border-slate-200 p-8">
+      {inner}
     </div>
   );
 }
