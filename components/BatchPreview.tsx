@@ -303,7 +303,8 @@ function TempPressureChart({ data, height = 160 }: { data: Row[]; height?: numbe
             tick={{ fontSize: 10, fill: "#f97316" }}
             axisLine={false}
             tickLine={false}
-            width={38}
+            width={52}
+            label={{ value: "Temperature", angle: -90, position: "insideLeft", offset: 12, style: { fontSize: 10, fill: "#f97316", fontWeight: 600 } }}
           />
           {/* Right Y — Pressure */}
           <YAxis
@@ -315,7 +316,8 @@ function TempPressureChart({ data, height = 160 }: { data: Row[]; height?: numbe
             tick={{ fontSize: 10, fill: "#818cf8" }}
             axisLine={false}
             tickLine={false}
-            width={44}
+            width={58}
+            label={{ value: "Pressure", angle: 90, position: "insideRight", offset: 14, style: { fontSize: 10, fill: "#818cf8", fontWeight: 600 } }}
           />
           <Tooltip
             content={({ active, payload }) => {
