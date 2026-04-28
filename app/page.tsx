@@ -175,7 +175,7 @@ export default function Home() {
         {result && (
           <>
             <MetricsBar result={result} />
-            <div className={`grid gap-6 ${selectedDeviation ? "grid-cols-2" : "grid-cols-1"}`}>
+            <div className={`grid gap-6 ${selectedDeviation ? "grid-cols-[3fr_2fr]" : "grid-cols-1"}`}>
               <DeviationTable
                 deviations={result.deviations}
                 selected={selected}

@@ -95,7 +95,7 @@ export default function DeviationTable({ deviations, selected, onSelect }: Props
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-      <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between gap-4">
+      <div className="px-4 py-3border-b border-slate-100 flex items-center justify-between gap-4">
         <h3 className="font-semibold text-slate-800">Detected Deviations</h3>
         <div className="flex items-center gap-2">
           <span className="text-xs text-slate-400 mr-1">Show:</span>
@@ -117,7 +117,7 @@ export default function DeviationTable({ deviations, selected, onSelect }: Props
             {cols.map(({ key, label }) => (
               <th
                 key={key}
-                className="px-6 py-3 text-left cursor-pointer select-none hover:text-slate-700 whitespace-nowrap"
+                className="px-4 py-3 text-left cursor-pointer select-none hover:text-slate-700 whitespace-nowrap"
                 onClick={() => handleSort(key)}
               >
                 {label}
@@ -133,10 +133,10 @@ export default function DeviationTable({ deviations, selected, onSelect }: Props
               onClick={() => onSelect(d.deviation_id)}
               className={`border-t border-slate-100 cursor-pointer transition-colors ${selected === d.deviation_id ? "bg-violet-50" : "hover:bg-slate-50"}`}
             >
-              <td className="px-6 py-4 font-mono font-medium text-slate-700">{d.deviation_id}</td>
-              <td className="px-6 py-4 text-slate-600">{d.step}</td>
-              <td className="px-6 py-4 text-slate-600 max-w-48 truncate">{d.parameter}</td>
-              <td className="px-6 py-4 text-slate-500 font-mono text-xs">{d.timestamp}</td>
+              <td className="px-4 py-3font-mono font-medium text-slate-700">{d.deviation_id}</td>
+              <td className="px-4 py-3text-slate-600">{d.step}</td>
+              <td className="px-4 py-3text-slate-600 max-w-48 truncate">{d.parameter}</td>
+              <td className="px-4 py-3text-slate-500 font-mono text-xs">{d.timestamp}</td>
               <td className="px-6 py-4">
                 <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${riskBadge[d.risk_level]}`}>
                   {d.risk_level}
@@ -146,7 +146,7 @@ export default function DeviationTable({ deviations, selected, onSelect }: Props
           ))}
           {hiddenCount > 0 && (
             <tr className="border-t border-slate-100">
-              <td colSpan={5} className="px-6 py-3 text-xs text-slate-400 text-center">
+              <td colSpan={5} className="px-4 py-3 text-xs text-slate-400 text-center">
                 {hiddenCount} deviation{hiddenCount > 1 ? "s" : ""} hidden by active filters
               </td>
             </tr>
