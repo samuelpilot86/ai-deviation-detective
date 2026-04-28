@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import {
-  LineChart, Line, ResponsiveContainer, ReferenceLine,
-  Tooltip, XAxis, YAxis, Scatter, ComposedChart, Area,
+  Line, ResponsiveContainer, ReferenceLine,
+  Tooltip, XAxis, YAxis, ComposedChart,
 } from "recharts";
 
 interface Row {
@@ -106,8 +106,6 @@ function Sparkline({
       timestamp: r.timestamp,
     }));
 
-  const anomalies = points.filter(p => p.anomalous);
-
   return (
     <div>
       <p className="text-xs font-semibold text-slate-600 mb-1">
@@ -141,16 +139,25 @@ function Sparkline({
             dataKey="value"
             stroke="#6366B4"
             strokeWidth={1.5}
-            dot={false}
+            isAnimationActive={false}
+            dot={(props: { cx?: number; cy?: number; payload?: { anomalous?: boolean }; index?: number }) => {
+              if (!props.payload?.anomalous) {
+                // Recharts requires an SVG element; return an invisible point
+                return <circle key={`d-${props.index}`} cx={props.cx} cy={props.cy} r={0} fill="none" />;
+              }
+              return (
+                <circle
+                  key={`a-${props.index}`}
+                  cx={props.cx}
+                  cy={props.cy}
+                  r={4}
+                  fill="#ef4444"
+                  stroke="white"
+                  strokeWidth={1.5}
+                />
+              );
+            }}
             activeDot={false}
-          />
-          <Scatter
-            data={anomalies}
-            dataKey="value"
-            fill="#ef4444"
-            shape={(props: { cx?: number; cy?: number }) => (
-              <circle cx={props.cx} cy={props.cy} r={4} fill="#ef4444" stroke="white" strokeWidth={1.5} />
-            )}
           />
         </ComposedChart>
       </ResponsiveContainer>
