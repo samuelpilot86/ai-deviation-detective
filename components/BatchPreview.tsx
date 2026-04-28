@@ -17,10 +17,10 @@ interface Row {
 
 // Known anomalous timestamps from EXPECTED.md
 function generatePhDriftTs(): string[] {
-  // Drift runs continuously from 09:25 to 10:14 (50 readings)
+  // Drift runs continuously from 09:26 to 10:14 (49 readings, pH > 7.2)
   const result: string[] = [];
-  let h = 9, m = 25;
-  for (let k = 0; k < 50; k++) {
+  let h = 9, m = 26;
+  for (let k = 0; k < 49; k++) {
     result.push(`2024-03-12 ${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:00`);
     m += 1;
     if (m >= 60) { m = 0; h += 1; }
