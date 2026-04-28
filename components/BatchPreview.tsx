@@ -34,10 +34,7 @@ const ANOMALOUS_BY_FIELD: Record<"temperature_c" | "pressure_bar" | "ph" | "mixi
     "2024-03-12 07:50:00", // temp spike 89.4°C
     "2024-03-12 07:51:00", // temp spike 87.1°C
   ]),
-  pressure_bar: new Set([
-    "2024-03-12 07:05:00", // multivariate MIXING (temp+pressure combo)
-    "2024-03-12 07:06:00",
-  ]),
+  pressure_bar: new Set<string>(),
   ph: new Set(generatePhDriftTs()), // pH drift FILLING 09:26–10:14
   mixing_rpm: new Set([
     "2024-03-12 07:40:00", // RPM=178 during HEATING (out-of-context)
@@ -46,8 +43,6 @@ const ANOMALOUS_BY_FIELD: Record<"temperature_c" | "pressure_bar" | "ph" | "mixi
 
 // Union of all anomalous timestamps (used for table highlighting)
 const ANOMALOUS_TS = new Set<string>([
-  "2024-03-12 07:05:00", // multivariate MIXING (temp+pressure combo)
-  "2024-03-12 07:06:00",
   ...ANOMALOUS_BY_FIELD.temperature_c,
   ...ANOMALOUS_BY_FIELD.ph,
   ...ANOMALOUS_BY_FIELD.mixing_rpm,

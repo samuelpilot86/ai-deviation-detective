@@ -14,7 +14,7 @@ const DEMO_SCENARIOS = [
   {
     id: "B441",
     label: "Batch B441 — Sterile Injectable",
-    description: "5 process deviations to be detected: temperature spike, multivariate anomaly, pH sensor drift, out-of-context agitator speed, SCADA data gap.",
+    description: "4 process deviations to be detected: temperature spike, pH sensor drift, out-of-context agitator speed, SCADA data gap.",
     file: "/demo_batch_B441.csv",
     filename: "batch_log_B441.csv",
   },
