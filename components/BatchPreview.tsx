@@ -156,7 +156,7 @@ function Sparkline({
                 <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs shadow-md">
                   <p className="font-medium text-slate-700">{d.step} · {d.timestamp.slice(11, 16)}</p>
                   <p className={d.anomalous ? "text-red-600 font-bold" : "text-slate-600"}>
-                    {d.value}{limits.unit} {d.anomalous ? "⚠ anomaly" : ""}
+                    {d.value}{limits.unit} {d.anomalous ? "⚠ deviation" : ""}
                   </p>
                 </div>
               );
@@ -204,25 +204,13 @@ const COL_LABELS: Record<string, string> = {
 };
 
 function SampledTable({ rows }: { rows: Row[] }) {
-  // 2 normal rows per step (excluding anomalous), capped at 10 total
-  const normalRows: Row[] = [];
+  // 2 rows per step, capped at 12 total
+  const sampledRows: Row[] = [];
   const seenSteps: Record<string, number> = {};
   for (const r of rows) {
-    if (!r.anomalous) {
-      seenSteps[r.step] = (seenSteps[r.step] ?? 0) + 1;
-      if (seenSteps[r.step] <= 2) normalRows.push(r);
-    }
-    if (normalRows.length >= 10) break;
-  }
-
-  const anomalousRows = rows.filter(r => r.anomalous);
-  // Show only one row per "event" (first of each contiguous group)
-  const shownAnomalies: Row[] = [];
-  let lastAnomStep = "";
-  for (const r of anomalousRows) {
-    const key = r.step + (r.timestamp.slice(0, 15));
-    if (key !== lastAnomStep) { shownAnomalies.push(r); lastAnomStep = key; }
-    if (shownAnomalies.length >= 6) break;
+    seenSteps[r.step] = (seenSteps[r.step] ?? 0) + 1;
+    if (seenSteps[r.step] <= 2) sampledRows.push(r);
+    if (sampledRows.length >= 12) break;
   }
 
   const fmt = (v: number | null | string) =>
@@ -239,7 +227,7 @@ function SampledTable({ rows }: { rows: Row[] }) {
           </tr>
         </thead>
         <tbody>
-          {normalRows.map((r, i) => (
+          {sampledRows.map((r, i) => (
             <tr key={i} className="border-t border-slate-100">
               <td className="px-3 py-1.5 font-mono text-slate-400">{r.timestamp.slice(11, 16)}</td>
               <td className="px-3 py-1.5">
@@ -249,24 +237,6 @@ function SampledTable({ rows }: { rows: Row[] }) {
               <td className="px-3 py-1.5 text-slate-600">{fmt(r.pressure_bar)}</td>
               <td className="px-3 py-1.5 text-slate-600">{fmt(r.ph)}</td>
               <td className="px-3 py-1.5 text-slate-600">{fmt(r.mixing_rpm)}</td>
-            </tr>
-          ))}
-          {/* Separator */}
-          <tr className="bg-red-50 border-t-2 border-red-200">
-            <td colSpan={6} className="px-3 py-1 text-[10px] font-semibold text-red-500 uppercase tracking-wide">
-              ⚠ Injected deviations — visible in raw data
-            </td>
-          </tr>
-          {shownAnomalies.map((r, i) => (
-            <tr key={i} className="border-t border-red-100 bg-red-50">
-              <td className="px-3 py-1.5 font-mono text-red-400">{r.timestamp.slice(11, 16)}</td>
-              <td className="px-3 py-1.5">
-                <span className="px-1.5 py-0.5 rounded text-white text-[10px] font-medium" style={{ background: STEP_COLOR[r.step] ?? "#94a3b8" }}>{r.step}</span>
-              </td>
-              <td className={`px-3 py-1.5 font-medium ${r.temperature_c !== null && (r.temperature_c > 77 || r.temperature_c < 68) ? "text-red-600" : "text-slate-600"}`}>{fmt(r.temperature_c)}</td>
-              <td className="px-3 py-1.5 text-slate-600">{fmt(r.pressure_bar)}</td>
-              <td className={`px-3 py-1.5 font-medium ${r.ph !== null && (r.ph > 7.3 || r.ph < 6.7) ? "text-red-600" : "text-slate-600"}`}>{fmt(r.ph)}</td>
-              <td className={`px-3 py-1.5 font-medium ${r.mixing_rpm !== null && r.step === "HEATING" ? "text-orange-600" : "text-slate-600"}`}>{fmt(r.mixing_rpm)}</td>
             </tr>
           ))}
         </tbody>
@@ -293,7 +263,7 @@ export default function BatchPreview({ csvPath }: { csvPath: string }) {
       <div>
         <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
           Process parameters over time
-          <span className="ml-2 font-normal normal-case text-slate-400">— red dots = injected anomalies · dashed lines = acceptable limits</span>
+          <span className="ml-2 font-normal normal-case text-slate-400">— red dots = flagged anomalies · dashed lines = acceptable limits</span>
         </p>
         <div className="grid grid-cols-3 gap-4">
           <Sparkline data={rows} field="temperature_c" limits={LIMITS.temperature_c} />
@@ -306,7 +276,7 @@ export default function BatchPreview({ csvPath }: { csvPath: string }) {
       <div>
         <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
           Raw data sample
-          <span className="ml-2 font-normal normal-case text-slate-400">— 10 normal readings + anomalous rows</span>
+          <span className="ml-2 font-normal normal-case text-slate-400">— sample of process readings across all steps</span>
         </p>
         <SampledTable rows={rows} />
       </div>
