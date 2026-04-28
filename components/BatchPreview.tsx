@@ -345,13 +345,6 @@ function TempPressureChart({ data, height = 160 }: { data: Row[]; height?: numbe
                 return <circle key={`p-${props.index}`} cx={props.cx} cy={props.cy} r={0} fill="none" />;
               return <circle key={`pa-${props.index}`} cx={props.cx} cy={props.cy} r={4} fill="#ef4444" stroke="white" strokeWidth={1.5} />;
             }} activeDot={false} />
-          <Legend
-            verticalAlign="top"
-            align="right"
-            iconType="line"
-            formatter={(value) => value === "temp" ? "Temperature" : "Pressure"}
-            wrapperStyle={{ fontSize: 10, paddingBottom: 4 }}
-          />
         </ComposedChart>
       </ResponsiveContainer>
     </div>
