@@ -63,7 +63,7 @@ const STEP_COLOR: Record<string, string> = {
 const LIMITS: Record<string, { lo: number; hi: number; label: string; unit: string }> = {
   temperature_c: { lo: 68, hi: 77,  label: "Temperature", unit: "°C" },
   ph:            { lo: 6.7, hi: 7.3, label: "pH",         unit: "" },
-  mixing_rpm:    { lo: 0,  hi: 210,  label: "RPM",        unit: "" },
+  mixing_rpm:    { lo: 0,  hi: 210,  label: "Agitator speed", unit: " RPM" },
 };
 
 function parseCSV(text: string): Row[] {
@@ -200,7 +200,7 @@ const TABLE_COLS = ["timestamp", "step", "temperature_c", "pressure_bar", "ph", 
 const COL_LABELS: Record<string, string> = {
   timestamp: "Timestamp", step: "Step",
   temperature_c: "Temp (°C)", pressure_bar: "Pressure (bar)",
-  ph: "pH", mixing_rpm: "RPM",
+  ph: "pH", mixing_rpm: "Agitator speed (RPM)",
 };
 
 function SampledTable({ rows }: { rows: Row[] }) {
