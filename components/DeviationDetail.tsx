@@ -1,4 +1,5 @@
 import { Deviation, RiskLevel } from "@/lib/types";
+import { prettyParameter } from "@/lib/format";
 
 const riskColors: Record<RiskLevel, string> = {
   HIGH:   "border-red-300 bg-red-50",
@@ -22,7 +23,7 @@ export default function DeviationDetail({ deviation }: { deviation: Deviation })
       </div>
 
       <div className="grid grid-cols-2 gap-3 text-sm">
-        <Detail label="Parameter"        value={deviation.parameter} />
+        <Detail label="Parameter"        value={prettyParameter(deviation.parameter)} />
         <Detail label="Observed"         value={deviation.observed_value} />
         <Detail label="Acceptable range" value={deviation.acceptable_range} />
         <Detail label="Timestamp"        value={deviation.timestamp} mono />

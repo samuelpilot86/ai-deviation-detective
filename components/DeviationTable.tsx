@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Deviation, RiskLevel } from "@/lib/types";
+import { prettyParameter } from "@/lib/format";
 
 const riskOrder: Record<RiskLevel, number> = { HIGH: 0, MEDIUM: 1, LOW: 2 };
 
@@ -135,7 +136,7 @@ export default function DeviationTable({ deviations, selected, onSelect }: Props
             >
               <td className="px-4 py-3font-mono font-medium text-slate-700">{d.deviation_id}</td>
               <td className="px-4 py-3text-slate-600">{d.step}</td>
-              <td className="px-4 py-3text-slate-600 max-w-48 truncate">{d.parameter}</td>
+              <td className="px-4 py-3text-slate-600 max-w-48 truncate">{prettyParameter(d.parameter)}</td>
               <td className="px-4 py-3text-slate-500 font-mono text-xs">{d.timestamp}</td>
               <td className="px-6 py-4">
                 <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${riskBadge[d.risk_level]}`}>
