@@ -88,7 +88,7 @@ function parseCSV(text: string): Row[] {
 
 // ── Sparkline with anomaly dots ──────────────────────────────────────────────
 function Sparkline({
-  data, field, limits, height = 120,
+  data, field, limits, height = 160,
 }: {
   data: Row[];
   field: keyof Pick<Row, "temperature_c" | "ph" | "mixing_rpm">;
@@ -106,6 +106,16 @@ function Sparkline({
       timestamp: r.timestamp,
     }));
 
+  // X-axis ticks: ~6 evenly spaced, show HH:MM
+  const xTicks = (() => {
+    if (points.length === 0) return [];
+    const count = 6;
+    const step = Math.floor(points.length / (count - 1));
+    return Array.from({ length: count }, (_, k) =>
+      Math.min(k * step, points.length - 1)
+    );
+  })();
+
   return (
     <div>
       <p className="text-xs font-semibold text-slate-600 mb-1">
@@ -115,9 +125,29 @@ function Sparkline({
         </span>
       </p>
       <ResponsiveContainer width="100%" height={height}>
-        <ComposedChart data={points} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-          <XAxis dataKey="i" hide />
-          <YAxis domain={["auto", "auto"]} hide />
+        <ComposedChart data={points} margin={{ top: 4, right: 8, left: 32, bottom: 20 }}>
+          <XAxis
+            dataKey="i"
+            type="number"
+            domain={[0, points.length - 1]}
+            ticks={xTicks}
+            tickFormatter={(v: number) => {
+              const p = points[v];
+              return p ? p.timestamp.slice(11, 16) : "";
+            }}
+            tick={{ fontSize: 10, fill: "#94a3b8" }}
+            axisLine={{ stroke: "#e2e8f0" }}
+            tickLine={false}
+          />
+          <YAxis
+            domain={["auto", "auto"]}
+            tickCount={5}
+            tickFormatter={(v: number) => `${v}${limits.unit}`}
+            tick={{ fontSize: 10, fill: "#94a3b8" }}
+            axisLine={false}
+            tickLine={false}
+            width={28}
+          />
           <Tooltip
             content={({ active, payload }) => {
               if (!active || !payload?.length) return null;
