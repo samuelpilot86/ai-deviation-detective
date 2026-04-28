@@ -28,13 +28,25 @@ function generatePhDriftTs(): string[] {
   return result;
 }
 
-const ANOMALOUS_TS = new Set([
-  "2024-03-12 07:05:00", // multivariate MIXING
+// Per-parameter anomalous timestamps — a row may be anomalous for one param but normal for others
+const ANOMALOUS_BY_FIELD: Record<"temperature_c" | "ph" | "mixing_rpm", Set<string>> = {
+  temperature_c: new Set([
+    "2024-03-12 07:50:00", // temp spike 89.4°C
+    "2024-03-12 07:51:00", // temp spike 87.1°C
+  ]),
+  ph: new Set(generatePhDriftTs()), // pH drift FILLING 09:26–10:14
+  mixing_rpm: new Set([
+    "2024-03-12 07:40:00", // RPM=178 during HEATING (out-of-context)
+  ]),
+};
+
+// Union of all anomalous timestamps (used for table highlighting)
+const ANOMALOUS_TS = new Set<string>([
+  "2024-03-12 07:05:00", // multivariate MIXING (temp+pressure combo)
   "2024-03-12 07:06:00",
-  "2024-03-12 07:40:00", // RPM context HEATING
-  "2024-03-12 07:50:00", // temp spike
-  "2024-03-12 07:51:00",
-  ...generatePhDriftTs(), // pH drift FILLING 09:25–10:14 (continuous, no recovery)
+  ...ANOMALOUS_BY_FIELD.temperature_c,
+  ...ANOMALOUS_BY_FIELD.ph,
+  ...ANOMALOUS_BY_FIELD.mixing_rpm,
 ]);
 
 // Step color palette
@@ -83,12 +95,13 @@ function Sparkline({
   limits: typeof LIMITS[string];
   height?: number;
 }) {
+  const fieldAnomalies = ANOMALOUS_BY_FIELD[field];
   const points = data
     .filter(r => r[field] !== null)
     .map((r, i) => ({
       i,
       value: r[field] as number,
-      anomalous: r.anomalous,
+      anomalous: fieldAnomalies.has(r.timestamp),
       step: r.step,
       timestamp: r.timestamp,
     }));
