@@ -60,10 +60,10 @@ const STEP_COLOR: Record<string, string> = {
 };
 
 // Acceptable ranges per parameter (for reference lines)
-const LIMITS: Record<string, { lo: number; hi: number; label: string; unit: string }> = {
-  temperature_c: { lo: 68, hi: 77,  label: "Temperature", unit: "°C" },
-  ph:            { lo: 6.7, hi: 7.3, label: "Acidity",     unit: " pH" },
-  mixing_rpm:    { lo: 0,  hi: 210,  label: "Agitator speed", unit: " RPM" },
+const LIMITS: Record<string, { lo: number; hi: number; label: string; unit: string; yTicks: number[] }> = {
+  temperature_c: { lo: 68, hi: 77,  label: "Temperature",   unit: "°C",  yTicks: [15, 30, 45, 60, 75, 90] },
+  ph:            { lo: 6.7, hi: 7.3, label: "Acidity",      unit: " pH", yTicks: [6.5, 7.0, 7.5, 8.0] },
+  mixing_rpm:    { lo: 0,  hi: 210,  label: "Agitator speed", unit: " RPM", yTicks: [0, 50, 100, 150, 200] },
 };
 
 function parseCSV(text: string): Row[] {
@@ -105,14 +105,16 @@ function Sparkline({
     timestamp: r.timestamp,
   }));
 
-  // X-axis ticks: ~6 evenly spaced, show HH:MM
+  // X-axis ticks: one per whole hour (e.g. 06:00, 07:00, …)
   const xTicks = (() => {
-    if (points.length === 0) return [];
-    const count = 6;
-    const step = Math.floor(points.length / (count - 1));
-    return Array.from({ length: count }, (_, k) =>
-      Math.min(k * step, points.length - 1)
-    );
+    const seen = new Set<string>();
+    return points
+      .filter(p => {
+        const hhmm = p.timestamp.slice(11, 16);
+        if (hhmm.endsWith(":00") && !seen.has(hhmm)) { seen.add(hhmm); return true; }
+        return false;
+      })
+      .map(p => p.i);
   })();
 
   return (
@@ -139,13 +141,13 @@ function Sparkline({
             tickLine={false}
           />
           <YAxis
-            domain={["auto", "auto"]}
-            tickCount={5}
+            domain={[limits.yTicks[0], limits.yTicks[limits.yTicks.length - 1]]}
+            ticks={limits.yTicks}
             tickFormatter={(v: number) => `${v}${limits.unit}`}
             tick={{ fontSize: 10, fill: "#94a3b8" }}
             axisLine={false}
             tickLine={false}
-            width={28}
+            width={38}
           />
           <Tooltip
             content={({ active, payload }) => {
