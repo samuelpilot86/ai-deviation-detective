@@ -29,10 +29,14 @@ function generatePhDriftTs(): string[] {
 }
 
 // Per-parameter anomalous timestamps — a row may be anomalous for one param but normal for others
-const ANOMALOUS_BY_FIELD: Record<"temperature_c" | "ph" | "mixing_rpm", Set<string>> = {
+const ANOMALOUS_BY_FIELD: Record<"temperature_c" | "pressure_bar" | "ph" | "mixing_rpm", Set<string>> = {
   temperature_c: new Set([
     "2024-03-12 07:50:00", // temp spike 89.4°C
     "2024-03-12 07:51:00", // temp spike 87.1°C
+  ]),
+  pressure_bar: new Set([
+    "2024-03-12 07:05:00", // multivariate MIXING (temp+pressure combo)
+    "2024-03-12 07:06:00",
   ]),
   ph: new Set(generatePhDriftTs()), // pH drift FILLING 09:26–10:14
   mixing_rpm: new Set([
@@ -61,8 +65,9 @@ const STEP_COLOR: Record<string, string> = {
 
 // Acceptable ranges per parameter (for reference lines)
 const LIMITS: Record<string, { lo: number; hi: number; label: string; unit: string; yTicks: number[] }> = {
-  temperature_c: { lo: 68, hi: 77,  label: "Temperature",   unit: "°C",  yTicks: [15, 30, 45, 60, 75, 90] },
-  ph:            { lo: 6.7, hi: 7.3, label: "Acidity",      unit: " pH", yTicks: [6.5, 7.0, 7.5, 8.0] },
+  temperature_c: { lo: 68, hi: 77,  label: "Temperature",    unit: "°C",  yTicks: [15, 30, 45, 60, 75, 90] },
+  pressure_bar:  { lo: 1.0, hi: 4.0, label: "Pressure",      unit: " bar", yTicks: [1.0, 2.0, 3.0, 4.0, 5.0] },
+  ph:            { lo: 6.7, hi: 7.3, label: "Acidity",       unit: " pH", yTicks: [6.5, 7.0, 7.5, 8.0] },
   mixing_rpm:    { lo: 0,  hi: 210,  label: "Agitator speed", unit: " RPM", yTicks: [0, 50, 100, 150, 200] },
 };
 
@@ -91,11 +96,11 @@ function Sparkline({
   data, field, limits, height = 160,
 }: {
   data: Row[];
-  field: keyof Pick<Row, "temperature_c" | "ph" | "mixing_rpm">;
+  field: keyof Pick<Row, "temperature_c" | "pressure_bar" | "ph" | "mixing_rpm">;
   limits: typeof LIMITS[string];
   height?: number;
 }) {
-  const fieldAnomalies = ANOMALOUS_BY_FIELD[field];
+  const fieldAnomalies = ANOMALOUS_BY_FIELD[field as keyof typeof ANOMALOUS_BY_FIELD];
   // Use ALL rows (full timeline), value is null when parameter not measured in that step
   const points = data.map((r, i) => ({
     i,
@@ -266,8 +271,9 @@ export default function BatchPreview({ csvPath }: { csvPath: string }) {
           Process parameters over time
           <span className="ml-2 font-normal normal-case text-slate-400">— red dots = flagged anomalies · dashed lines = acceptable limits</span>
         </p>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <Sparkline data={rows} field="temperature_c" limits={LIMITS.temperature_c} />
+          <Sparkline data={rows} field="pressure_bar"  limits={LIMITS.pressure_bar} />
           <Sparkline data={rows} field="ph"            limits={LIMITS.ph} />
           <Sparkline data={rows} field="mixing_rpm"    limits={LIMITS.mixing_rpm} />
         </div>
