@@ -47,8 +47,8 @@ interface Props {
 
 export default function DeviationTable({ deviations, selected, onSelect }: Props) {
   const [active, setActive] = useState<Set<RiskLevel>>(new Set(["HIGH", "MEDIUM"]));
-  const [sortCol, setSortCol] = useState<SortCol>("risk_level");
-  const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [sortCol, setSortCol] = useState<SortCol>("timestamp");
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
 
   function toggle(level: RiskLevel) {
     setActive(prev => {

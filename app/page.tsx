@@ -43,7 +43,16 @@ export default function Home() {
         const err = await res.json();
         throw new Error(err.detail ?? "Analysis failed");
       }
-      setResult(await res.json());
+      const data = await res.json();
+      setResult(data);
+      // Auto-select: highest risk level, then earliest timestamp
+      const riskOrder: Record<string, number> = { HIGH: 0, MEDIUM: 1, LOW: 2 };
+      const top = [...data.deviations].sort((a, b) => {
+        const riskDiff = riskOrder[a.risk_level] - riskOrder[b.risk_level];
+        if (riskDiff !== 0) return riskDiff;
+        return a.timestamp < b.timestamp ? -1 : 1;
+      })[0];
+      if (top) setSelected(top.deviation_id);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Unknown error");
     } finally {
