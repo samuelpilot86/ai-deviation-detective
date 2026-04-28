@@ -109,9 +109,6 @@ export default function Home() {
               then a <strong>large language model</strong> explains each deviation, identifies root causes, assigns
               risk levels, and generates a non-conformity report. An investigation copilot lets you ask follow-up questions.
             </p>
-            <p className="text-slate-400 text-xs mt-2">
-              Built by Samuel as a job application demo for the AI Product Builder (Digital PO) role · Sanofi M&amp;S Accelerator — independent project, not affiliated with Sanofi.
-            </p>
           </div>
 
           {/* Tabs */}
