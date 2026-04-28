@@ -14,7 +14,7 @@ const DEMO_SCENARIOS = [
   {
     id: "B441",
     label: "Batch B441 — Sterile Injectable",
-    description: "4 process deviations to be detected: temperature spike, pH sensor drift, out-of-context agitator speed, SCADA data gap.",
+    description: "Synthetic dataset simulating a real pharmaceutical production batch, with 4 deviations injected: temperature spike, pH sensor drift, out-of-context agitator speed, SCADA data gap.",
     file: "/demo_batch_B441.csv",
     filename: "batch_log_B441.csv",
   },
@@ -123,7 +123,7 @@ export default function Home() {
 
           {/* Tabs */}
           <div className="flex border-b border-slate-100 px-8 mt-2">
-            {(["csv", "demo"] as Tab[]).map(t => (
+            {(["demo", "csv"] as Tab[]).map(t => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
@@ -151,8 +151,13 @@ export default function Home() {
                   <div key={s.id} className="flex flex-col gap-5">
                     <div className="flex items-center justify-between gap-4 flex-wrap">
                       <div>
-                        <p className="text-sm font-semibold text-slate-800">{s.label}</p>
-                        <p className="text-xs text-slate-500 mt-0.5">{s.description}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-semibold text-slate-800">{s.label}</p>
+                          <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-semibold uppercase tracking-wide">
+                            Synthetic data
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-1">{s.description}</p>
                       </div>
                       <button
                         onClick={() => runDemo(s)}
