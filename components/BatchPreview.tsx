@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import {
   Line, ResponsiveContainer, ReferenceLine,
-  Tooltip, XAxis, YAxis, ComposedChart,
+  Tooltip, XAxis, YAxis, ComposedChart, Legend,
 } from "recharts";
 
 interface Row {
@@ -251,6 +251,112 @@ function SampledTable({ rows }: { rows: Row[] }) {
   );
 }
 
+// ── Temperature + Pressure dual-axis chart ───────────────────────────────────
+function TempPressureChart({ data, height = 160 }: { data: Row[]; height?: number }) {
+  const tempAnomalies  = ANOMALOUS_BY_FIELD.temperature_c;
+  const pressAnomalies = ANOMALOUS_BY_FIELD.pressure_bar;
+
+  const points = data.map((r, i) => ({
+    i,
+    temp:     r.temperature_c,
+    pressure: r.pressure_bar,
+    tempAnom: tempAnomalies.has(r.timestamp),
+    pressAnom: pressAnomalies.has(r.timestamp),
+    timestamp: r.timestamp,
+    step: r.step,
+  }));
+
+  const xTicks = (() => {
+    const seen = new Set<string>();
+    return points.filter(p => {
+      const hhmm = p.timestamp.slice(11, 16);
+      if (hhmm.endsWith(":00") && !seen.has(hhmm)) { seen.add(hhmm); return true; }
+      return false;
+    }).map(p => p.i);
+  })();
+
+  return (
+    <div>
+      <p className="text-xs font-semibold text-slate-600 mb-1">
+        Temperature &amp; Pressure
+        <span className="font-normal text-slate-400 ml-1">— correlated parameters · red dots = flagged anomalies</span>
+      </p>
+      <ResponsiveContainer width="100%" height={height}>
+        <ComposedChart data={points} margin={{ top: 4, right: 48, left: 38, bottom: 20 }}>
+          <XAxis
+            dataKey="i"
+            type="number"
+            domain={[0, points.length - 1]}
+            ticks={xTicks}
+            tickFormatter={(v: number) => points[v]?.timestamp.slice(11, 16) ?? ""}
+            tick={{ fontSize: 10, fill: "#94a3b8" }}
+            axisLine={{ stroke: "#e2e8f0" }}
+            tickLine={false}
+          />
+          {/* Left Y — Temperature */}
+          <YAxis
+            yAxisId="temp"
+            orientation="left"
+            domain={[15, 90]}
+            ticks={[15, 30, 45, 60, 75, 90]}
+            tickFormatter={(v: number) => `${v}°C`}
+            tick={{ fontSize: 10, fill: "#f97316" }}
+            axisLine={false}
+            tickLine={false}
+            width={38}
+          />
+          {/* Right Y — Pressure */}
+          <YAxis
+            yAxisId="pressure"
+            orientation="right"
+            domain={[1.0, 5.0]}
+            ticks={[1.0, 2.0, 3.0, 4.0, 5.0]}
+            tickFormatter={(v: number) => `${v} bar`}
+            tick={{ fontSize: 10, fill: "#818cf8" }}
+            axisLine={false}
+            tickLine={false}
+            width={44}
+          />
+          <Tooltip
+            content={({ active, payload }) => {
+              if (!active || !payload?.length) return null;
+              const d = payload[0].payload;
+              return (
+                <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs shadow-md">
+                  <p className="font-medium text-slate-700">{d.step} · {d.timestamp.slice(11, 16)}</p>
+                  {d.temp     != null && <p className={d.tempAnom  ? "text-red-600 font-bold" : "text-orange-600"}>{d.temp}°C{d.tempAnom  ? " ⚠" : ""}</p>}
+                  {d.pressure != null && <p className={d.pressAnom ? "text-red-600 font-bold" : "text-indigo-500"}>{d.pressure} bar{d.pressAnom ? " ⚠" : ""}</p>}
+                </div>
+              );
+            }}
+          />
+          <ReferenceLine yAxisId="temp"     y={77} stroke="#fca5a5" strokeDasharray="4 2" strokeWidth={1} />
+          <ReferenceLine yAxisId="temp"     y={68} stroke="#fca5a5" strokeDasharray="4 2" strokeWidth={1} />
+          <Line yAxisId="temp"     type="monotone" dataKey="temp"     stroke="#f97316" strokeWidth={1.5} connectNulls={false} isAnimationActive={false}
+            dot={(props: { cx?: number; cy?: number; payload?: { tempAnom?: boolean; temp?: number | null }; index?: number }) => {
+              if (props.payload?.temp == null || !props.payload?.tempAnom)
+                return <circle key={`t-${props.index}`} cx={props.cx} cy={props.cy} r={0} fill="none" />;
+              return <circle key={`ta-${props.index}`} cx={props.cx} cy={props.cy} r={4} fill="#ef4444" stroke="white" strokeWidth={1.5} />;
+            }} activeDot={false} />
+          <Line yAxisId="pressure" type="monotone" dataKey="pressure" stroke="#818cf8" strokeWidth={1.5} connectNulls={false} isAnimationActive={false}
+            dot={(props: { cx?: number; cy?: number; payload?: { pressAnom?: boolean; pressure?: number | null }; index?: number }) => {
+              if (props.payload?.pressure == null || !props.payload?.pressAnom)
+                return <circle key={`p-${props.index}`} cx={props.cx} cy={props.cy} r={0} fill="none" />;
+              return <circle key={`pa-${props.index}`} cx={props.cx} cy={props.cy} r={4} fill="#ef4444" stroke="white" strokeWidth={1.5} />;
+            }} activeDot={false} />
+          <Legend
+            verticalAlign="top"
+            align="right"
+            iconType="line"
+            formatter={(value) => value === "temp" ? "Temperature" : "Pressure"}
+            wrapperStyle={{ fontSize: 10, paddingBottom: 4 }}
+          />
+        </ComposedChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
 // ── Main export ──────────────────────────────────────────────────────────────
 export default function BatchPreview({ csvPath }: { csvPath: string }) {
   const [rows, setRows] = useState<Row[] | null>(null);
@@ -271,11 +377,12 @@ export default function BatchPreview({ csvPath }: { csvPath: string }) {
           Process parameters over time
           <span className="ml-2 font-normal normal-case text-slate-400">— red dots = flagged anomalies · dashed lines = acceptable limits</span>
         </p>
-        <div className="grid grid-cols-2 gap-4">
-          <Sparkline data={rows} field="temperature_c" limits={LIMITS.temperature_c} />
-          <Sparkline data={rows} field="pressure_bar"  limits={LIMITS.pressure_bar} />
-          <Sparkline data={rows} field="ph"            limits={LIMITS.ph} />
-          <Sparkline data={rows} field="mixing_rpm"    limits={LIMITS.mixing_rpm} />
+        <div className="flex flex-col gap-4">
+          <TempPressureChart data={rows} />
+          <div className="grid grid-cols-2 gap-4">
+            <Sparkline data={rows} field="ph"         limits={LIMITS.ph} />
+            <Sparkline data={rows} field="mixing_rpm" limits={LIMITS.mixing_rpm} />
+          </div>
         </div>
       </div>
 
