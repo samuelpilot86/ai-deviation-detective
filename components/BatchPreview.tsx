@@ -279,7 +279,6 @@ function TempPressureChart({ data, height = 160 }: { data: Row[]; height?: numbe
     <div>
       <p className="text-xs font-semibold text-slate-600 mb-1">
         Temperature &amp; Pressure
-        <span className="font-normal text-slate-400 ml-1">— correlated parameters · red dots = flagged anomalies</span>
       </p>
       <ResponsiveContainer width="100%" height={height}>
         <ComposedChart data={points} margin={{ top: 4, right: 48, left: 38, bottom: 20 }}>
