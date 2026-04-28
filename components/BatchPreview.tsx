@@ -373,10 +373,23 @@ export default function BatchPreview({ csvPath }: { csvPath: string }) {
     <div className="flex flex-col gap-6">
       {/* Sparklines */}
       <div>
-        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
-          Process parameters over time
-          <span className="ml-2 font-normal normal-case text-slate-400">— red dots = flagged anomalies · dashed lines = acceptable limits</span>
-        </p>
+        <div className="flex items-center gap-4 mb-3">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Process parameters over time</p>
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1.5 text-xs text-slate-400">
+              <svg width="16" height="10" viewBox="0 0 16 10">
+                <line x1="0" y1="5" x2="16" y2="5" stroke="#fca5a5" strokeWidth="1.5" strokeDasharray="4 2"/>
+              </svg>
+              Acceptable limits
+            </span>
+            <span className="flex items-center gap-1.5 text-xs text-slate-400">
+              <svg width="10" height="10" viewBox="0 0 10 10">
+                <circle cx="5" cy="5" r="4" fill="#ef4444" stroke="white" strokeWidth="1.5"/>
+              </svg>
+              Flagged anomaly
+            </span>
+          </div>
+        </div>
         <div className="flex flex-col gap-4">
           <TempPressureChart data={rows} />
           <div className="grid grid-cols-2 gap-4">
