@@ -96,15 +96,14 @@ function Sparkline({
   height?: number;
 }) {
   const fieldAnomalies = ANOMALOUS_BY_FIELD[field];
-  const points = data
-    .filter(r => r[field] !== null)
-    .map((r, i) => ({
-      i,
-      value: r[field] as number,
-      anomalous: fieldAnomalies.has(r.timestamp),
-      step: r.step,
-      timestamp: r.timestamp,
-    }));
+  // Use ALL rows (full timeline), value is null when parameter not measured in that step
+  const points = data.map((r, i) => ({
+    i,
+    value: r[field] as number | null,
+    anomalous: fieldAnomalies.has(r.timestamp),
+    step: r.step,
+    timestamp: r.timestamp,
+  }));
 
   // X-axis ticks: ~6 evenly spaced, show HH:MM
   const xTicks = (() => {
@@ -169,10 +168,10 @@ function Sparkline({
             dataKey="value"
             stroke="#6366B4"
             strokeWidth={1.5}
+            connectNulls={false}
             isAnimationActive={false}
-            dot={(props: { cx?: number; cy?: number; payload?: { anomalous?: boolean }; index?: number }) => {
-              if (!props.payload?.anomalous) {
-                // Recharts requires an SVG element; return an invisible point
+            dot={(props: { cx?: number; cy?: number; payload?: { anomalous?: boolean; value?: number | null }; index?: number }) => {
+              if (props.payload?.value == null || !props.payload?.anomalous) {
                 return <circle key={`d-${props.index}`} cx={props.cx} cy={props.cy} r={0} fill="none" />;
               }
               return (
