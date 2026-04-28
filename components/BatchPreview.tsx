@@ -51,12 +51,12 @@ const ANOMALOUS_TS = new Set<string>([
 
 // Step color palette
 const STEP_COLOR: Record<string, string> = {
-  WEIGHING: "#94a3b8",
+  WEIGHING: "#d4b896",
   MIXING:   "#818cf8",
   HEATING:  "#f97316",
   COOLING:  "#38bdf8",
   FILLING:  "#34d399",
-  CAPPING:  "#94a3b8",
+  CAPPING:  "#64748b",
 };
 
 // Acceptable ranges per parameter (for reference lines)
