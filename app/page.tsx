@@ -99,9 +99,9 @@ export default function Home() {
             <div>
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">The problem</p>
               <p className="text-slate-600 text-sm leading-relaxed">
-                A single sterile-injectable batch generates 250+ sensor readings across 6 process steps.
-                Triaging deviations manually takes a QA expert <strong>30–60 minutes per batch</strong>, and subtle issues
-                (sensor drift, out-of-context values, data gaps) are easy to miss.
+                Pharmaceutical production batches generate hundreds of sensor readings across multiple steps.
+                A QA expert spends <strong>30–60 minutes</strong> triaging deviations per batch — and subtle issues
+                (sensor drift, out-of-context values, data gaps) often slip through.
               </p>
             </div>
             <div>
