@@ -45,7 +45,6 @@ export default function Home() {
       }
       const data = await res.json();
       setResult(data);
-      // Auto-select: highest risk level, then earliest timestamp
       const riskOrder: Record<string, number> = { HIGH: 0, MEDIUM: 1, LOW: 2 };
       const top = [...data.deviations].sort((a, b) => {
         const riskDiff = riskOrder[a.risk_level] - riskOrder[b.risk_level];
@@ -72,17 +71,11 @@ export default function Home() {
     <div className="min-h-screen bg-slate-50">
       <header className="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          {/* Logo mark — EKG spike + bullseye */}
           <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="20" cy="20" r="20" fill="#6366B4"/>
-            {/* EKG baseline + spike */}
-            <polyline
-              points="2,22 8,22 11,25 13,19 16,28 19,10 22,26 24,22 30,22"
-              stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none"
-            />
-            {/* Bullseye — outer ring */}
+            <polyline points="2,22 8,22 11,25 13,19 16,28 19,10 22,26 24,22 30,22"
+              stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
             <circle cx="33" cy="11" r="4.5" stroke="white" strokeWidth="2" fill="none"/>
-            {/* Bullseye — inner dot */}
             <circle cx="33" cy="11" r="1.8" fill="white"/>
           </svg>
           <div>
@@ -95,24 +88,27 @@ export default function Home() {
 
       <main className="max-w-7xl mx-auto px-8 py-8 flex flex-col gap-6">
 
-        {/* ── Intro + tabbed input ── */}
-        <div className="bg-white rounded-2xl border border-slate-200">
+        {/* ── 1. Presentation ── */}
+        <div className="bg-white rounded-2xl border border-slate-200 px-8 py-7">
+          <span className="text-xs font-semibold text-violet-700 uppercase tracking-wider">MVP · Job Application Demo</span>
+          <h2 className="text-2xl font-bold text-slate-900 leading-snug mt-1">
+            Automated process deviation detection for pharmaceutical manufacturing
+          </h2>
+          <p className="text-slate-500 text-sm leading-relaxed mt-2 max-w-3xl">
+            Upload a production batch log (CSV) — <strong>Isolation Forest</strong> flags statistical anomalies,
+            then a <strong>large language model</strong> explains each deviation, identifies root causes, assigns
+            risk levels, and generates a non-conformity report. An investigation copilot lets you ask follow-up questions.
+          </p>
+        </div>
 
-          {/* Description */}
-          <div className="px-8 pt-7 pb-5 border-b border-slate-100">
-            <span className="text-xs font-semibold text-violet-700 uppercase tracking-wider">MVP · Job Application Demo</span>
-            <h2 className="text-2xl font-bold text-slate-900 leading-snug mt-1">
-              Automated process deviation detection for pharmaceutical manufacturing
-            </h2>
-            <p className="text-slate-500 text-sm leading-relaxed mt-2 max-w-3xl">
-              Upload a production batch log (CSV) — <strong>Isolation Forest</strong> flags statistical anomalies,
-              then a <strong>large language model</strong> explains each deviation, identifies root causes, assigns
-              risk levels, and generates a non-conformity report. An investigation copilot lets you ask follow-up questions.
-            </p>
+        {/* ── 2. Input data ── */}
+        <div className="bg-white rounded-2xl border border-slate-200">
+          <div className="px-8 pt-5 pb-1">
+            <h3 className="text-base font-semibold text-slate-800">Input data</h3>
           </div>
 
           {/* Tabs */}
-          <div className="flex border-b border-slate-100 px-8">
+          <div className="flex border-b border-slate-100 px-8 mt-2">
             {(["csv", "demo"] as Tab[]).map(t => (
               <button
                 key={t}
@@ -138,8 +134,7 @@ export default function Home() {
             {tab === "demo" && (
               <div className="flex flex-col gap-6">
                 {DEMO_SCENARIOS.map(s => (
-                  <div key={s.id} className="flex flex-col gap-4">
-                    {/* Launch button */}
+                  <div key={s.id} className="flex flex-col gap-5">
                     <div className="flex items-center justify-between gap-4 flex-wrap">
                       <div>
                         <p className="text-sm font-semibold text-slate-800">{s.label}</p>
@@ -154,7 +149,6 @@ export default function Home() {
                         {loading ? "Analyzing…" : "Run analysis"}
                       </button>
                     </div>
-                    {/* Data preview */}
                     <BatchPreview csvPath={s.file} />
                   </div>
                 ))}
@@ -163,30 +157,38 @@ export default function Home() {
           </div>
         </div>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-2xl px-6 py-4 text-red-700 text-sm">
-            {error}
+        {/* ── 3. Analysis ── */}
+        {(error || result) && (
+          <div className="flex flex-col gap-4">
+            <h3 className="text-base font-semibold text-slate-800 px-1">Analysis</h3>
+
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-2xl px-6 py-4 text-red-700 text-sm">
+                {error}
+              </div>
+            )}
+
+            {result && (
+              <>
+                <MetricsBar result={result} />
+                <div className={`grid gap-6 ${selectedDeviation ? "grid-cols-[3fr_2fr]" : "grid-cols-1"}`}>
+                  <DeviationTable
+                    deviations={result.deviations}
+                    selected={selected}
+                    onSelect={(id) => setSelected(prev => prev === id ? null : id)}
+                  />
+                  {selectedDeviation && <DeviationDetail deviation={selectedDeviation} />}
+                </div>
+                <ChatWidget result={result} />
+              </>
+            )}
           </div>
         )}
 
-        {result && (
-          <>
-            <MetricsBar result={result} />
-            <div className={`grid gap-6 ${selectedDeviation ? "grid-cols-[3fr_2fr]" : "grid-cols-1"}`}>
-              <DeviationTable
-                deviations={result.deviations}
-                selected={selected}
-                onSelect={(id) => setSelected(prev => prev === id ? null : id)}
-              />
-              {selectedDeviation && <DeviationDetail deviation={selectedDeviation} />}
-            </div>
-            <ChatWidget result={result} />
-          </>
-        )}
       </main>
 
-      <footer className="border-t border-slate-200 bg-white mt-8 px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-2">
-        <p className="text-xs text-slate-400 text-center sm:text-left">
+      <footer className="border-t border-slate-200 bg-white mt-8 px-8 py-5">
+        <p className="text-xs text-slate-400">
           <span className="font-medium text-slate-500">AI Deviation Detective</span> — Independent MVP built as part of a job application.
           Not affiliated with or endorsed by Sanofi. All data used in this demo is synthetic.
         </p>
