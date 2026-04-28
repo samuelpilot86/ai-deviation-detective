@@ -7,7 +7,8 @@ interface Message { role: "user" | "assistant"; content: string; }
 
 export default function ChatWidget({ result }: { result: AnalysisResult }) {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState("");
+  const DEFAULT_QUESTION = "Walk me through each detected deviation — probable root cause and recommended remediation for each.";
+  const [input, setInput] = useState(DEFAULT_QUESTION);
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -80,7 +81,7 @@ export default function ChatWidget({ result }: { result: AnalysisResult }) {
       <div className="px-4 py-3 border-t border-slate-100 flex gap-2">
         <input
           className="flex-1 rounded-xl border border-slate-200 px-4 py-2 text-sm outline-none focus:border-violet-400"
-          placeholder="e.g. What corrective action for DEV-03?"
+          placeholder="Ask anything about this batch…"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") send(); }}
