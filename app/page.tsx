@@ -25,7 +25,6 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
-  const [showChat, setShowChat] = useState(false);
   const [tab, setTab] = useState<Tab>("demo");
 
   async function runAnalysis(file: File) {
@@ -82,18 +81,7 @@ export default function Home() {
             <p className="text-xs text-slate-500">Pharmaceutical Manufacturing · Process Quality · <span className="text-violet-600 font-medium">Job application demo by Samuel Pilot</span></p>
           </div>
         </div>
-        {result && (
-          <div className="flex items-center gap-2">
-            <ExportButton result={result} />
-            <button
-              onClick={() => setShowChat(v => !v)}
-              className="px-4 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-2"
-            >
-              <span className="w-2 h-2 rounded-full bg-green-400" />
-              {showChat ? "Hide Copilot" : "Investigation Copilot"}
-            </button>
-          </div>
-        )}
+        {result && <ExportButton result={result} />}
       </header>
 
       <main className="max-w-7xl mx-auto px-8 py-8 flex flex-col gap-6">
@@ -186,7 +174,7 @@ export default function Home() {
               />
               {selectedDeviation && <DeviationDetail deviation={selectedDeviation} />}
             </div>
-            {showChat && <ChatWidget result={result} />}
+            <ChatWidget result={result} />
           </>
         )}
       </main>
