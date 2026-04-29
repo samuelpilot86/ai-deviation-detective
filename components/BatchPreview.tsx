@@ -159,7 +159,7 @@ function Sparkline({
         </span>
       </p>
       <ResponsiveContainer width="100%" height={height}>
-        <ComposedChart data={points} margin={{ top: 4, right: 8, left: 32, bottom: 20 }}>
+        <ComposedChart data={points} margin={{ top: 4, right: 66, left: 8, bottom: 20 }}>
           <XAxis
             dataKey="i"
             type="number"
@@ -180,7 +180,7 @@ function Sparkline({
             tick={{ fontSize: 10, fill: "#94a3b8" }}
             axisLine={false}
             tickLine={false}
-            width={38}
+            width={60}
           />
           <Tooltip
             content={({ active, payload }) => {
@@ -309,7 +309,7 @@ function TempPressureChart({ data, height = 160 }: { data: Row[]; height?: numbe
         Temperature &amp; Pressure
       </p>
       <ResponsiveContainer width="100%" height={height}>
-        <ComposedChart data={points} margin={{ top: 4, right: 48, left: 38, bottom: 20 }}>
+        <ComposedChart data={points} margin={{ top: 4, right: 8, left: 8, bottom: 20 }}>
           <XAxis
             dataKey="i"
             type="number"
@@ -330,7 +330,7 @@ function TempPressureChart({ data, height = 160 }: { data: Row[]; height?: numbe
             tick={{ fontSize: 10, fill: "#f97316" }}
             axisLine={false}
             tickLine={false}
-            width={52}
+            width={60}
             label={{ value: "Temperature", angle: -90, position: "insideLeft", offset: 12, style: { fontSize: 10, fill: "#f97316", fontWeight: 600 } }}
           />
           {/* Right Y — Pressure */}
