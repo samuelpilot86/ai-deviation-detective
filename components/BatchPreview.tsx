@@ -69,7 +69,7 @@ const LIMITS: Record<string, { lo: number; hi: number; label: string; unit: stri
 function parseCSV(text: string): Row[] {
   const lines = text.trim().split("\n");
   const headers = lines[0].split(",");
-  return lines.slice(1).map(line => {
+  const raw: Row[] = lines.slice(1).map(line => {
     const vals = line.split(",");
     const get = (k: string) => vals[headers.indexOf(k)] ?? "";
     const num = (k: string) => { const v = parseFloat(get(k)); return isNaN(v) ? null : v; };
@@ -84,6 +84,39 @@ function parseCSV(text: string): Row[] {
       anomalous: ANOMALOUS_TS.has(ts),
     };
   });
+  return fillTimeGaps(raw);
+}
+
+// Insert null-valued rows for missing minutes so charts show real time-axis gaps.
+function fillTimeGaps(rows: Row[]): Row[] {
+  if (rows.length === 0) return rows;
+  const out: Row[] = [rows[0]];
+  for (let i = 1; i < rows.length; i++) {
+    const prev = rows[i - 1];
+    const curr = rows[i];
+    const prevT = Date.parse(prev.timestamp.replace(" ", "T"));
+    const currT = Date.parse(curr.timestamp.replace(" ", "T"));
+    const gapMin = Math.round((currT - prevT) / 60000);
+    if (gapMin > 1) {
+      for (let m = 1; m < gapMin; m++) {
+        const t = new Date(prevT + m * 60000);
+        const pad = (n: number) => String(n).padStart(2, "0");
+        const ts =
+          `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())} ` +
+          `${pad(t.getHours())}:${pad(t.getMinutes())}:${pad(t.getSeconds())}`;
+        out.push({
+          timestamp: ts,
+          step: prev.step,
+          temperature_c: null,
+          pressure_bar: null,
+          ph: null,
+          mixing_rpm: null,
+        });
+      }
+    }
+    out.push(curr);
+  }
+  return out;
 }
 
 // ── Sparkline with anomaly dots ──────────────────────────────────────────────
