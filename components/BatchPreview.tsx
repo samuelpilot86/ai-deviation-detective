@@ -414,10 +414,8 @@ export default function BatchPreview({ csvPath }: { csvPath: string }) {
         </div>
         <div className="flex flex-col gap-4">
           <TempPressureChart data={rows} />
-          <div className="grid grid-cols-2 gap-4">
-            <Sparkline data={rows} field="ph"         limits={LIMITS.ph} />
-            <Sparkline data={rows} field="mixing_rpm" limits={LIMITS.mixing_rpm} />
-          </div>
+          <Sparkline data={rows} field="ph"         limits={LIMITS.ph} />
+          <Sparkline data={rows} field="mixing_rpm" limits={LIMITS.mixing_rpm} />
         </div>
       </div>
 
