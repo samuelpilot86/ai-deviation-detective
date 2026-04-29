@@ -408,7 +408,7 @@ export default function BatchPreview({ csvPath }: { csvPath: string }) {
               <svg width="10" height="10" viewBox="0 0 10 10">
                 <circle cx="5" cy="5" r="4" fill="#ef4444" stroke="white" strokeWidth="1.5"/>
               </svg>
-              Flagged anomaly
+              Anomalies that should be detected
             </span>
           </div>
         </div>
