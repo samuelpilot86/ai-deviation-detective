@@ -28,8 +28,8 @@ function generatePhDriftTs(): string[] {
   return result;
 }
 
-// Per-parameter anomalous timestamps — a row may be anomalous for one param but normal for others
-const ANOMALOUS_BY_FIELD: Record<"temperature_c" | "pressure_bar" | "ph" | "mixing_rpm", Set<string>> = {
+// Rule-based anomalous timestamps (limit breach, context error, data gap)
+const RULE_BASED_BY_FIELD: Record<"temperature_c" | "pressure_bar" | "ph" | "mixing_rpm", Set<string>> = {
   temperature_c: new Set([
     "2024-03-12 07:50:00", // temp spike 89.4°C
     "2024-03-12 07:51:00", // temp spike 87.1°C
@@ -37,9 +37,26 @@ const ANOMALOUS_BY_FIELD: Record<"temperature_c" | "pressure_bar" | "ph" | "mixi
   pressure_bar: new Set<string>(),
   ph: new Set(generatePhDriftTs()), // pH drift FILLING 09:26–10:14
   mixing_rpm: new Set([
-    "2024-03-12 06:45:00", // RPM=195 during MIXING (IF-only anomaly — within limits but 6.8σ from step norm)
-    "2024-03-12 07:40:00", // RPM=178 during HEATING (out-of-context)
+    "2024-03-12 07:40:00", // RPM=178 during HEATING (out-of-context rule)
   ]),
+};
+
+// IF-only anomalous timestamps (no rule fires — only Isolation Forest catches these)
+const IF_ONLY_BY_FIELD: Record<"temperature_c" | "pressure_bar" | "ph" | "mixing_rpm", Set<string>> = {
+  temperature_c: new Set<string>(),
+  pressure_bar:  new Set<string>(),
+  ph:            new Set<string>(),
+  mixing_rpm: new Set([
+    "2024-03-12 06:45:00", // RPM=195 during MIXING — within limits but 6.8σ from step norm
+  ]),
+};
+
+// Keep ANOMALOUS_BY_FIELD as union for backward compat (table highlighting)
+const ANOMALOUS_BY_FIELD: Record<"temperature_c" | "pressure_bar" | "ph" | "mixing_rpm", Set<string>> = {
+  temperature_c: new Set([...RULE_BASED_BY_FIELD.temperature_c, ...IF_ONLY_BY_FIELD.temperature_c]),
+  pressure_bar:  new Set([...RULE_BASED_BY_FIELD.pressure_bar,  ...IF_ONLY_BY_FIELD.pressure_bar]),
+  ph:            new Set([...RULE_BASED_BY_FIELD.ph,            ...IF_ONLY_BY_FIELD.ph]),
+  mixing_rpm:    new Set([...RULE_BASED_BY_FIELD.mixing_rpm,    ...IF_ONLY_BY_FIELD.mixing_rpm]),
 };
 
 // Union of all anomalous timestamps (used for table highlighting)
@@ -129,12 +146,14 @@ function Sparkline({
   limits: typeof LIMITS[string];
   height?: number;
 }) {
-  const fieldAnomalies = ANOMALOUS_BY_FIELD[field as keyof typeof ANOMALOUS_BY_FIELD];
+  const ruleAnomalies = RULE_BASED_BY_FIELD[field as keyof typeof RULE_BASED_BY_FIELD];
+  const ifOnlyAnomalies = IF_ONLY_BY_FIELD[field as keyof typeof IF_ONLY_BY_FIELD];
   // Use ALL rows (full timeline), value is null when parameter not measured in that step
   const points = data.map((r, i) => ({
     i,
     value: r[field] as number | null,
-    anomalous: fieldAnomalies.has(r.timestamp),
+    ruleAnomaly: ruleAnomalies.has(r.timestamp),
+    ifOnlyAnomaly: ifOnlyAnomalies.has(r.timestamp),
     step: r.step,
     timestamp: r.timestamp,
   }));
@@ -187,11 +206,12 @@ function Sparkline({
             content={({ active, payload }) => {
               if (!active || !payload?.length) return null;
               const d = payload[0].payload;
+              const isAnomaly = d.ruleAnomaly || d.ifOnlyAnomaly;
               return (
                 <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs shadow-md">
                   <p className="font-medium text-slate-700">{d.step} · {d.timestamp.slice(11, 16)}</p>
-                  <p className={d.anomalous ? "text-red-600 font-bold" : "text-slate-600"}>
-                    {d.value}{limits.unit} {d.anomalous ? "⚠ deviation" : ""}
+                  <p className={d.ruleAnomaly ? "text-red-600 font-bold" : d.ifOnlyAnomaly ? "text-violet-600 font-bold" : "text-slate-600"}>
+                    {d.value}{limits.unit}{d.ruleAnomaly ? " ⚠ rule deviation" : d.ifOnlyAnomaly ? " ⚠ ML-only anomaly" : ""}
                   </p>
                 </div>
               );
@@ -206,21 +226,12 @@ function Sparkline({
             strokeWidth={1.5}
             connectNulls={false}
             isAnimationActive={false}
-            dot={(props: { cx?: number; cy?: number; payload?: { anomalous?: boolean; value?: number | null }; index?: number }) => {
-              if (props.payload?.value == null || !props.payload?.anomalous) {
-                return <circle key={`d-${props.index}`} cx={props.cx} cy={props.cy} r={0} fill="none" />;
-              }
-              return (
-                <circle
-                  key={`a-${props.index}`}
-                  cx={props.cx}
-                  cy={props.cy}
-                  r={4}
-                  fill="#ef4444"
-                  stroke="white"
-                  strokeWidth={1.5}
-                />
-              );
+            dot={(props: { cx?: number; cy?: number; payload?: { ruleAnomaly?: boolean; ifOnlyAnomaly?: boolean; value?: number | null }; index?: number }) => {
+              const { cx, cy, payload, index } = props;
+              if (payload?.value == null) return <circle key={`d-${index}`} cx={cx} cy={cy} r={0} fill="none" />;
+              if (payload.ruleAnomaly)   return <circle key={`r-${index}`} cx={cx} cy={cy} r={4} fill="#ef4444" stroke="white" strokeWidth={1.5} />;
+              if (payload.ifOnlyAnomaly) return <circle key={`m-${index}`} cx={cx} cy={cy} r={4} fill="white" stroke="#7c3aed" strokeWidth={2} />;
+              return <circle key={`n-${index}`} cx={cx} cy={cy} r={0} fill="none" />;
             }}
             activeDot={false}
           />
@@ -282,15 +293,14 @@ function SampledTable({ rows }: { rows: Row[] }) {
 
 // ── Temperature + Pressure dual-axis chart ───────────────────────────────────
 function TempPressureChart({ data, height = 160 }: { data: Row[]; height?: number }) {
-  const tempAnomalies  = ANOMALOUS_BY_FIELD.temperature_c;
-  const pressAnomalies = ANOMALOUS_BY_FIELD.pressure_bar;
-
   const points = data.map((r, i) => ({
     i,
-    temp:     r.temperature_c,
-    pressure: r.pressure_bar,
-    tempAnom: tempAnomalies.has(r.timestamp),
-    pressAnom: pressAnomalies.has(r.timestamp),
+    temp:         r.temperature_c,
+    pressure:     r.pressure_bar,
+    tempRuleAnom: RULE_BASED_BY_FIELD.temperature_c.has(r.timestamp),
+    tempIfAnom:   IF_ONLY_BY_FIELD.temperature_c.has(r.timestamp),
+    pressRuleAnom: RULE_BASED_BY_FIELD.pressure_bar.has(r.timestamp),
+    pressIfAnom:   IF_ONLY_BY_FIELD.pressure_bar.has(r.timestamp),
     timestamp: r.timestamp,
     step: r.step,
   }));
@@ -354,25 +364,29 @@ function TempPressureChart({ data, height = 160 }: { data: Row[]; height?: numbe
               return (
                 <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs shadow-md">
                   <p className="font-medium text-slate-700">{d.step} · {d.timestamp.slice(11, 16)}</p>
-                  {d.temp     != null && <p className={d.tempAnom  ? "text-red-600 font-bold" : "text-orange-600"}>{d.temp}°C{d.tempAnom  ? " ⚠" : ""}</p>}
-                  {d.pressure != null && <p className={d.pressAnom ? "text-red-600 font-bold" : "text-indigo-500"}>{d.pressure} bar{d.pressAnom ? " ⚠" : ""}</p>}
+                  {d.temp     != null && <p className={d.tempRuleAnom ? "text-red-600 font-bold" : d.tempIfAnom ? "text-violet-600 font-bold" : "text-orange-600"}>{d.temp}°C{d.tempRuleAnom ? " ⚠ rule" : d.tempIfAnom ? " ⚠ ML" : ""}</p>}
+                  {d.pressure != null && <p className={d.pressRuleAnom ? "text-red-600 font-bold" : d.pressIfAnom ? "text-violet-600 font-bold" : "text-indigo-500"}>{d.pressure} bar{d.pressRuleAnom ? " ⚠ rule" : d.pressIfAnom ? " ⚠ ML" : ""}</p>}
                 </div>
               );
             }}
           />
           <ReferenceLine yAxisId="temp"     y={77} stroke="#fca5a5" strokeDasharray="4 2" strokeWidth={1} />
           <ReferenceLine yAxisId="temp"     y={68} stroke="#fca5a5" strokeDasharray="4 2" strokeWidth={1} />
-          <Line yAxisId="temp"     type="monotone" dataKey="temp"     stroke="#f97316" strokeWidth={1.5} connectNulls={false} isAnimationActive={false}
-            dot={(props: { cx?: number; cy?: number; payload?: { tempAnom?: boolean; temp?: number | null }; index?: number }) => {
-              if (props.payload?.temp == null || !props.payload?.tempAnom)
-                return <circle key={`t-${props.index}`} cx={props.cx} cy={props.cy} r={0} fill="none" />;
-              return <circle key={`ta-${props.index}`} cx={props.cx} cy={props.cy} r={4} fill="#ef4444" stroke="white" strokeWidth={1.5} />;
+          <Line yAxisId="temp" type="monotone" dataKey="temp" stroke="#f97316" strokeWidth={1.5} connectNulls={false} isAnimationActive={false}
+            dot={(props: { cx?: number; cy?: number; payload?: { tempRuleAnom?: boolean; tempIfAnom?: boolean; temp?: number | null }; index?: number }) => {
+              const { cx, cy, payload, index } = props;
+              if (payload?.temp == null) return <circle key={`t-${index}`} cx={cx} cy={cy} r={0} fill="none" />;
+              if (payload.tempRuleAnom)  return <circle key={`tr-${index}`} cx={cx} cy={cy} r={4} fill="#ef4444" stroke="white" strokeWidth={1.5} />;
+              if (payload.tempIfAnom)    return <circle key={`tm-${index}`} cx={cx} cy={cy} r={4} fill="white" stroke="#7c3aed" strokeWidth={2} />;
+              return <circle key={`tn-${index}`} cx={cx} cy={cy} r={0} fill="none" />;
             }} activeDot={false} />
           <Line yAxisId="pressure" type="monotone" dataKey="pressure" stroke="#818cf8" strokeWidth={1.5} connectNulls={false} isAnimationActive={false}
-            dot={(props: { cx?: number; cy?: number; payload?: { pressAnom?: boolean; pressure?: number | null }; index?: number }) => {
-              if (props.payload?.pressure == null || !props.payload?.pressAnom)
-                return <circle key={`p-${props.index}`} cx={props.cx} cy={props.cy} r={0} fill="none" />;
-              return <circle key={`pa-${props.index}`} cx={props.cx} cy={props.cy} r={4} fill="#ef4444" stroke="white" strokeWidth={1.5} />;
+            dot={(props: { cx?: number; cy?: number; payload?: { pressRuleAnom?: boolean; pressIfAnom?: boolean; pressure?: number | null }; index?: number }) => {
+              const { cx, cy, payload, index } = props;
+              if (payload?.pressure == null) return <circle key={`p-${index}`} cx={cx} cy={cy} r={0} fill="none" />;
+              if (payload.pressRuleAnom)     return <circle key={`pr-${index}`} cx={cx} cy={cy} r={4} fill="#ef4444" stroke="white" strokeWidth={1.5} />;
+              if (payload.pressIfAnom)       return <circle key={`pm-${index}`} cx={cx} cy={cy} r={4} fill="white" stroke="#7c3aed" strokeWidth={2} />;
+              return <circle key={`pn-${index}`} cx={cx} cy={cy} r={0} fill="none" />;
             }} activeDot={false} />
         </ComposedChart>
       </ResponsiveContainer>
@@ -409,7 +423,13 @@ export default function BatchPreview({ csvPath }: { csvPath: string }) {
               <svg width="10" height="10" viewBox="0 0 10 10">
                 <circle cx="5" cy="5" r="4" fill="#ef4444" stroke="white" strokeWidth="1.5"/>
               </svg>
-              Anomalies that should be detected
+              Rule-based anomaly
+            </span>
+            <span className="flex items-center gap-1.5 text-xs text-slate-400">
+              <svg width="10" height="10" viewBox="0 0 10 10">
+                <circle cx="5" cy="5" r="4" fill="white" stroke="#7c3aed" strokeWidth="2"/>
+              </svg>
+              ML-only anomaly
             </span>
           </div>
         </div>
