@@ -14,7 +14,7 @@ const DEMO_SCENARIOS = [
   {
     id: "B441",
     label: "Batch B441 — Sterile Injectable",
-    description: "Synthetic dataset simulating a real pharmaceutical production batch, with 4 deviations: temperature spike, pH sensor drift, out-of-context agitator speed, SCADA data gap.",
+    description: "Synthetic dataset simulating a real pharmaceutical production batch, with 5 deviations: abnormal agitator speed (ML-only), temperature spike, out-of-context agitator speed, SCADA data gap, pH sensor drift.",
     file: "/demo_batch_B441.csv",
     filename: "batch_log_B441.csv",
   },
