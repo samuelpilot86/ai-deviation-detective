@@ -211,7 +211,7 @@ function Sparkline({
                 <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs shadow-md">
                   <p className="font-medium text-slate-700">{d.step} · {d.timestamp.slice(11, 16)}</p>
                   <p className={d.ruleAnomaly ? "text-red-600 font-bold" : d.ifOnlyAnomaly ? "text-violet-600 font-bold" : "text-slate-600"}>
-                    {d.value}{limits.unit}{d.ruleAnomaly ? " ⚠ rule deviation" : d.ifOnlyAnomaly ? " ⚠ ML-only anomaly" : ""}
+                    {d.value}{limits.unit}{d.ruleAnomaly ? " ⚠ out of rules" : d.ifOnlyAnomaly ? " ⚠ AI only" : ""}
                   </p>
                 </div>
               );
@@ -230,7 +230,7 @@ function Sparkline({
               const { cx, cy, payload, index } = props;
               if (payload?.value == null) return <circle key={`d-${index}`} cx={cx} cy={cy} r={0} fill="none" />;
               if (payload.ruleAnomaly)   return <circle key={`r-${index}`} cx={cx} cy={cy} r={4} fill="#ef4444" stroke="white" strokeWidth={1.5} />;
-              if (payload.ifOnlyAnomaly) return <circle key={`m-${index}`} cx={cx} cy={cy} r={4} fill="white" stroke="#7c3aed" strokeWidth={2} />;
+              if (payload.ifOnlyAnomaly) return <circle key={`m-${index}`} cx={cx} cy={cy} r={4} fill="#7c3aed" stroke="white" strokeWidth={1.5} />;
               return <circle key={`n-${index}`} cx={cx} cy={cy} r={0} fill="none" />;
             }}
             activeDot={false}
@@ -338,11 +338,11 @@ function TempPressureChart({ data, height = 160 }: { data: Row[]; height?: numbe
             domain={[15, 90]}
             ticks={[15, 30, 45, 60, 75, 90]}
             tickFormatter={(v: number) => `${v}°C`}
-            tick={{ fontSize: 10, fill: "#f97316" }}
+            tick={{ fontSize: 10, fill: "#0ea5e9" }}
             axisLine={false}
             tickLine={false}
             width={60}
-            label={{ value: "Temperature", angle: -90, position: "insideLeft", offset: 12, style: { fontSize: 10, fill: "#f97316", fontWeight: 600 } }}
+            label={{ value: "Temperature", angle: -90, position: "insideLeft", offset: 12, style: { fontSize: 10, fill: "#0ea5e9", fontWeight: 600 } }}
           />
           {/* Right Y — Pressure */}
           <YAxis
@@ -364,20 +364,19 @@ function TempPressureChart({ data, height = 160 }: { data: Row[]; height?: numbe
               return (
                 <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs shadow-md">
                   <p className="font-medium text-slate-700">{d.step} · {d.timestamp.slice(11, 16)}</p>
-                  {d.temp     != null && <p className={d.tempRuleAnom ? "text-red-600 font-bold" : d.tempIfAnom ? "text-violet-600 font-bold" : "text-orange-600"}>{d.temp}°C{d.tempRuleAnom ? " ⚠ rule" : d.tempIfAnom ? " ⚠ ML" : ""}</p>}
+                  {d.temp     != null && <p className={d.tempRuleAnom ? "text-red-600 font-bold" : d.tempIfAnom ? "text-violet-600 font-bold" : "text-sky-500"}>{d.temp}°C{d.tempRuleAnom ? " ⚠ rule" : d.tempIfAnom ? " ⚠ ML" : ""}</p>}
                   {d.pressure != null && <p className={d.pressRuleAnom ? "text-red-600 font-bold" : d.pressIfAnom ? "text-violet-600 font-bold" : "text-indigo-500"}>{d.pressure} bar{d.pressRuleAnom ? " ⚠ rule" : d.pressIfAnom ? " ⚠ ML" : ""}</p>}
                 </div>
               );
             }}
           />
-          <ReferenceLine yAxisId="temp"     y={77} stroke="#fca5a5" strokeDasharray="4 2" strokeWidth={1} />
-          <ReferenceLine yAxisId="temp"     y={68} stroke="#fca5a5" strokeDasharray="4 2" strokeWidth={1} />
-          <Line yAxisId="temp" type="monotone" dataKey="temp" stroke="#f97316" strokeWidth={1.5} connectNulls={false} isAnimationActive={false}
+          {/* Temperature limits (68–77°C) apply to HEATING only — omitted to avoid misleading cross-step display */}
+          <Line yAxisId="temp" type="monotone" dataKey="temp" stroke="#0ea5e9" strokeWidth={1.5} connectNulls={false} isAnimationActive={false}
             dot={(props: { cx?: number; cy?: number; payload?: { tempRuleAnom?: boolean; tempIfAnom?: boolean; temp?: number | null }; index?: number }) => {
               const { cx, cy, payload, index } = props;
               if (payload?.temp == null) return <circle key={`t-${index}`} cx={cx} cy={cy} r={0} fill="none" />;
               if (payload.tempRuleAnom)  return <circle key={`tr-${index}`} cx={cx} cy={cy} r={4} fill="#ef4444" stroke="white" strokeWidth={1.5} />;
-              if (payload.tempIfAnom)    return <circle key={`tm-${index}`} cx={cx} cy={cy} r={4} fill="white" stroke="#7c3aed" strokeWidth={2} />;
+              if (payload.tempIfAnom)    return <circle key={`tm-${index}`} cx={cx} cy={cy} r={4} fill="#7c3aed" stroke="white" strokeWidth={1.5} />;
               return <circle key={`tn-${index}`} cx={cx} cy={cy} r={0} fill="none" />;
             }} activeDot={false} />
           <Line yAxisId="pressure" type="monotone" dataKey="pressure" stroke="#818cf8" strokeWidth={1.5} connectNulls={false} isAnimationActive={false}
@@ -385,7 +384,7 @@ function TempPressureChart({ data, height = 160 }: { data: Row[]; height?: numbe
               const { cx, cy, payload, index } = props;
               if (payload?.pressure == null) return <circle key={`p-${index}`} cx={cx} cy={cy} r={0} fill="none" />;
               if (payload.pressRuleAnom)     return <circle key={`pr-${index}`} cx={cx} cy={cy} r={4} fill="#ef4444" stroke="white" strokeWidth={1.5} />;
-              if (payload.pressIfAnom)       return <circle key={`pm-${index}`} cx={cx} cy={cy} r={4} fill="white" stroke="#7c3aed" strokeWidth={2} />;
+              if (payload.pressIfAnom)       return <circle key={`pm-${index}`} cx={cx} cy={cy} r={4} fill="#7c3aed" stroke="white" strokeWidth={1.5} />;
               return <circle key={`pn-${index}`} cx={cx} cy={cy} r={0} fill="none" />;
             }} activeDot={false} />
         </ComposedChart>
@@ -417,19 +416,19 @@ export default function BatchPreview({ csvPath }: { csvPath: string }) {
               <svg width="16" height="10" viewBox="0 0 16 10">
                 <line x1="0" y1="5" x2="16" y2="5" stroke="#fca5a5" strokeWidth="1.5" strokeDasharray="4 2"/>
               </svg>
-              Acceptable limits
+              Pre-defined limits
             </span>
             <span className="flex items-center gap-1.5 text-xs text-slate-400">
               <svg width="10" height="10" viewBox="0 0 10 10">
                 <circle cx="5" cy="5" r="4" fill="#ef4444" stroke="white" strokeWidth="1.5"/>
               </svg>
-              Rule-based anomaly
+              Anomaly - out of rules
             </span>
             <span className="flex items-center gap-1.5 text-xs text-slate-400">
               <svg width="10" height="10" viewBox="0 0 10 10">
-                <circle cx="5" cy="5" r="4" fill="white" stroke="#7c3aed" strokeWidth="2"/>
+                <circle cx="5" cy="5" r="4" fill="#7c3aed" stroke="white" strokeWidth="1.5"/>
               </svg>
-              ML-only anomaly
+              Anomaly - detectable by AI only
             </span>
           </div>
         </div>

@@ -14,7 +14,7 @@ const DEMO_SCENARIOS = [
   {
     id: "B441",
     label: "Batch B441 — Sterile Injectable",
-    description: "Synthetic dataset simulating a real pharmaceutical production batch, with 5 deviations: abnormal agitator speed (ML-only), temperature spike, out-of-context agitator speed, SCADA data gap, pH sensor drift.",
+    description: "Synthetic dataset simulating a real pharmaceutical production batch, with 5 deviations: abnormal agitator speed (detectable by AI only), temperature spike, out-of-context agitator speed, SCADA data gap, pH sensor drift.",
     file: "/demo_batch_B441.csv",
     filename: "batch_log_B441.csv",
   },
@@ -107,7 +107,7 @@ export default function Home() {
             <div>
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">This MVP</p>
               <p className="text-slate-600 text-sm leading-relaxed">
-                <strong>Isolation Forest</strong> + business rules pre-filter suspicious rows.
+                <strong>AI (Isolation Forest)</strong> + business rules pre-filter suspicious rows.
                 A <strong>large language model</strong> then explains each deviation, suggests root causes, assigns risk,
                 and drafts a non-conformity report. <strong>~10 seconds per batch.</strong> An investigation copilot answers follow-up questions.
               </p>
