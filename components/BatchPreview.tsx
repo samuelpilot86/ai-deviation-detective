@@ -37,6 +37,7 @@ const ANOMALOUS_BY_FIELD: Record<"temperature_c" | "pressure_bar" | "ph" | "mixi
   pressure_bar: new Set<string>(),
   ph: new Set(generatePhDriftTs()), // pH drift FILLING 09:26–10:14
   mixing_rpm: new Set([
+    "2024-03-12 06:45:00", // RPM=195 during MIXING (IF-only anomaly — within limits but 6.8σ from step norm)
     "2024-03-12 07:40:00", // RPM=178 during HEATING (out-of-context)
   ]),
 };
